@@ -267,7 +267,7 @@ export function AppSidebar() {
           <NavSecondary items={data.navSecondary} />
         </SidebarItem>
         <SidebarItem>
-          <StorageCard />
+          {/* <StorageCard /> */}
         </SidebarItem>
       </SidebarContent>
       <SidebarFooter>
