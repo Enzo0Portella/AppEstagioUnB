@@ -3,8 +3,10 @@
 import {
   Atom,
   Bird,
+  BookMarked,
   BookOpen,
   Bot,
+  CircleUserIcon,
   Code2,
   Eclipse,
   Frame,
@@ -15,6 +17,7 @@ import {
   Rabbit,
   Send,
   Settings2,
+  Snail,
   SquareTerminal,
   Star,
   Turtle,
@@ -37,19 +40,9 @@ import {
 const data = {
   teams: [
     {
-      name: "Acme Inc",
-      logo: Atom,
+      name: "UNB",
+      logo: CircleUserIcon,
       plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: Eclipse,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Rabbit,
-      plan: "Free",
     },
   ],
   user: {
@@ -198,19 +191,14 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Explore",
       url: "#",
-      icon: Frame,
+      icon: Snail,
     },
     {
-      name: "Sales & Marketing",
+      name: "Favoritos",
       url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      icon: BookMarked,
     },
   ],
   searchResults: [
@@ -255,23 +243,14 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarItem>
-          <SidebarLabel>Platform</SidebarLabel>
-          <NavMain items={data.navMain} searchResults={data.searchResults} />
-        </SidebarItem>
-        <SidebarItem>
-          <SidebarLabel>Projects</SidebarLabel>
           <NavProjects projects={data.projects} />
         </SidebarItem>
         <SidebarItem className="mt-auto">
-          <SidebarLabel>Help</SidebarLabel>
           <NavSecondary items={data.navSecondary} />
-        </SidebarItem>
-        <SidebarItem>
-          {/* <StorageCard /> */}
         </SidebarItem>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <StorageCard />
       </SidebarFooter>
     </Sidebar>
   )

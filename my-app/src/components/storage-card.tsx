@@ -1,7 +1,7 @@
 import { Database } from "lucide-react"
+import { Badge } from "./ui/badge"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 
 export function StorageCard() {
   return (
@@ -13,11 +13,6 @@ export function StorageCard() {
         <div className="grid flex-1 gap-1">
           <p className="font-medium">Running out of space?</p>
           <p className="text-muted-foreground">79.2 GB / 100 GB used</p>
-          <Progress
-            value={79.2}
-            className="mt-1"
-            aria-label="79.2 GB / 100 GB used"
-          />
         </div>
       </CardContent>
     </Card>
