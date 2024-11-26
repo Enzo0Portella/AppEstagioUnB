@@ -1,13 +1,13 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import ExploreNav from "@/components/explore-page/explore-nav";
-import InsectCard from "@/components/explore-page/insect-card"; // Supondo que o componente está nesta localização
+import InsectCard from "@/components/explore-page/insect-card";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-// A função de renderização do componente pode ser assíncrona para buscar dados no servidor
 export default async function Home() {
-  // Simulação de uma chamada ao banco de dados ou API
-  const itemsFound = 702; // Substitua por uma chamada real ao seu banco de dados
+  const itemsFound = 702;
 
-  // Simulação de dados (pode vir de uma API futuramente)
   const insectData = [
     {
       order: "Coleoptera",
@@ -25,28 +25,33 @@ export default async function Home() {
       collector: "Doe. J.",
       isFavorite: true,
     },
-    // Adicione mais insetos conforme necessário
   ];
 
   return (
-    <div className="flex h-screen w-full bg-bg">
-      <div className="fixed inset-y-0 left-0 w-[13rem]">
-        <AppSidebar />
-      </div>
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-bg">
+        <div className="fixed inset-y-0 left-0 w-[13rem]">
+          <AppSidebar />
+        </div>
 
-      <div className="ml-[13rem] flex-grow h-full p-2">
-        <div className="h-full overflow-y-auto bg-white m-1 p-4 rounded-lg">
-          {/* Passar o número de itens encontrados como prop para o ExploreNav */}
-          <ExploreNav itemsFound={itemsFound} />
+        <div className="ml-[13rem] flex-grow h-full p-2">
+          <div className="h-full overflow-y-auto bg-white m-1 p-4 rounded-lg">
+            <Button asChild className="mb-4">
+              <Link href="/dashboard">
+                Ir para Dashboard
+              </Link>
+            </Button>
 
-          {/* Renderização dos Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-            {insectData.map((insect, index) => (
-              <InsectCard key={index} {...insect} />
-            ))}
+            <ExploreNav itemsFound={itemsFound} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+              {insectData.map((insect, index) => (
+                <InsectCard key={index} {...insect} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
