@@ -10,10 +10,12 @@ import {
   CornerUpRight,
   FileText,
   GalleryVerticalEnd,
+  Grid,
   LineChart,
   Link,
-  Settings2,
-  Star,
+  List,
+  Plus,
+  Rows4,
   Trash,
   Trash2,
 } from "lucide-react"
@@ -33,115 +35,101 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { CopyIcon, DotsHorizontalIcon } from "@radix-ui/react-icons"
+import { DotsHorizontalIcon } from "@radix-ui/react-icons"
+import { InsectFormDialog } from "@/components/insect-form-dialog"
 
-const data = [
-  [
-    {
-      label: "Customize Page",
-      icon: Settings2,
-    },
-    {
-      label: "Turn into wiki",
-      icon: FileText,
-    },
-  ],
-  [
-    {
-      label: "Copy Link",
-      icon: Link,
-    },
-    {
-      label: "Duplicate",
-      icon: Copy,
-    },
-    {
-      label: "Move to",
-      icon: CornerUpRight,
-    },
-    {
-      label: "Move to Trash",
-      icon: Trash2,
-    },
-  ],
-  [
-    {
-      label: "Undo",
-      icon: CornerUpLeft,
-    },
-    {
-      label: "View analytics",
-      icon: LineChart,
-    },
-    {
-      label: "Version History",
-      icon: GalleryVerticalEnd,
-    },
-    {
-      label: "Show delete pages",
-      icon: Trash,
-    },
-    {
-      label: "Notifications",
-      icon: Bell,
-    },
-  ],
-  [
-    {
-      label: "Import",
-      icon: ArrowUp,
-    },
-    {
-      label: "Export",
-      icon: ArrowDown,
-    },
-  ],
-]
+export type ViewMode = "grid" | "list"
 
-export function NavActions() {
+interface NavActionsProps {
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  onNewInsect?: () => void
+}
+
+export function NavActions({ viewMode, onViewModeChange, onNewInsect }: NavActionsProps) {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [isFormOpen, setIsFormOpen] = React.useState(false)
 
-  React.useEffect(() => {
-    setIsOpen(true)
-  }, [])
+  const handleNewInsect = () => {
+    setIsOpen(false) // fecha o menu
+    setIsFormOpen(true) // abre o formulário
+  }
+
+  const handleInsectSubmit = (data: InsectFormData) => {
+    // Aqui você pode implementar a lógica para salvar o novo inseto
+    console.log('Novo inseto:', data)
+  }
+
+  const data = [
+    [
+      { icon: Plus, label: "Novo Inseto", onClick: handleNewInsect },
+      { icon: FileText, label: "Documentos" },
+      { icon: LineChart, label: "Relatórios" }
+    ],
+    [
+      { icon: Trash2, label: "Lixeira" }
+    ]
+  ]
+
+  const toggleViewMode = () => {
+    const newMode = viewMode === "grid" ? "list" : "grid"
+    onViewModeChange(newMode)
+  }
 
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 data-[state=open]:bg-accent"
-          >
-            <DotsHorizontalIcon />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-56 overflow-hidden rounded-lg p-0"
-          align="end"
+    <>
+      <div className="flex items-center gap-2 text-sm">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={toggleViewMode}
         >
-          <Sidebar collapsible="none" className="bg-transparent">
-            <SidebarContent>
-              {data.map((group, index) => (
-                <SidebarGroup key={index} className="border-b last:border-none">
-                  <SidebarGroupContent className="gap-0">
-                    <SidebarMenu>
-                      {group.map((item, index) => (
-                        <SidebarMenuItem key={index}>
-                          <SidebarMenuButton>
-                            <item.icon /> <span>{item.label}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              ))}
-            </SidebarContent>
-          </Sidebar>
-        </PopoverContent>
-      </Popover>
-    </div>
+          {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+        </Button>
+
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 data-[state=open]:bg-accent"
+            >
+              <DotsHorizontalIcon />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-56 overflow-hidden rounded-lg p-0"
+            align="end"
+          >
+            <Sidebar collapsible="none" className="bg-transparent">
+              <SidebarContent>
+                {data.map((group: any[], groupIndex: number) => (
+                  <SidebarGroup key={groupIndex} className="border-b last:border-none">
+                    <SidebarGroupContent className="gap-0">
+                      <SidebarMenu>
+                        {group.map((item: { icon: any, label: string, onClick?: () => void }, itemIndex: number) => (
+                          <SidebarMenuItem key={itemIndex}>
+                            <SidebarMenuButton onClick={item.onClick}>
+                              <item.icon /> <span>{item.label}</span>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                ))}
+              </SidebarContent>
+            </Sidebar>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <InsectFormDialog 
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleInsectSubmit}
+      />
+    </>
   )
 }

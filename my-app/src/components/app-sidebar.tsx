@@ -28,9 +28,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { CalendarIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons"
+import { SpotlightSearch } from "@/components/spotlight-search"
+import { useHotkeys } from "react-hotkeys-hook"
 
-// This is sample data.
 const data = {
   teams: [
     {
@@ -51,8 +51,7 @@ const data = {
   ],
   navMain: [
     {
-      title: "Search",
-      url: "#",
+      title: "Buscar",
       icon: Search,
     },
     {
@@ -80,16 +79,6 @@ const data = {
       icon: Settings2,
     },
     {
-      title: "Templates",
-      url: "#",
-      icon: Blocks,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
-    },
-    {
       title: "Help",
       url: "#",
       icon: MessageCircleQuestion,
@@ -101,17 +90,51 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ 
+  insectData = [],
+  ...props 
+}: React.ComponentProps<typeof Sidebar> & { insectData?: any[] }) {
+  const [spotlightOpen, setSpotlightOpen] = React.useState(false)
+
+  // Adicionar atalho de teclado (Command+K ou Ctrl+K)
+  useHotkeys('mod+k', (event) => {
+    event.preventDefault()
+    setSpotlightOpen(true)
+  })
+
+  const handleSearchClick = () => {
+    setSpotlightOpen(true)
+  }
+
+  // Modificar o data.navMain para incluir o handler do click
+  const navMainWithHandlers = data.navMain.map(item => {
+    if (item.title === "Buscar") {
+      return {
+        ...item,
+        onClick: handleSearchClick
+      }
+    }
+    return item
+  })
+
   return (
-    <Sidebar className="border-r-0" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-        <NavMain items={data.navMain} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarRail />
-    </Sidebar>
+    <>
+      <Sidebar className="border-r-0" {...props}>
+        <SidebarHeader>
+          <TeamSwitcher teams={data.teams} />
+          <NavMain items={navMainWithHandlers as NavMainItemProps[]} />
+        </SidebarHeader>
+        <SidebarContent>
+          <NavSecondary items={data.navSecondary} className="mt-auto" />
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+
+      <SpotlightSearch 
+        open={spotlightOpen}
+        onOpenChange={setSpotlightOpen}
+        insects={insectData}
+      />
+    </>
   )
 }

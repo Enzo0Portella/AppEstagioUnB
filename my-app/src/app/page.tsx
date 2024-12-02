@@ -1,12 +1,16 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import ExploreNav from "@/components/explore-page/explore-nav";
-import InsectCard from "@/components/explore-page/insect-card";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+"use client"
 
-export default async function Home() {
-  const itemsFound = 702;
+import { useState } from "react"
+import { AppSidebar } from "@/components/app-sidebar"
+import ExploreNav from "@/components/explore-page/explore-nav"
+import InsectCard from "@/components/explore-page/insect-card"
+import InsectList from "@/components/explore-page/insect-list"
+import { NavActions, type ViewMode } from "@/components/nav-actions"
+import { SidebarProvider } from "@/components/ui/sidebar"
+
+export default function Home() {
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
+  const itemsFound = 702
 
   const insectData = [
     {
@@ -25,7 +29,7 @@ export default async function Home() {
       collector: "Doe. J.",
       isFavorite: true,
     },
-  ];
+  ]
 
   return (
     <SidebarProvider>
@@ -36,22 +40,23 @@ export default async function Home() {
 
         <div className="ml-[13rem] flex-grow h-full p-2">
           <div className="h-full overflow-y-auto bg-white m-1 p-4 rounded-lg">
-            <Button asChild className="mb-4">
-              <Link href="/dashboard">
-                Ir para Dashboard
-              </Link>
-            </Button>
-
-            <ExploreNav itemsFound={itemsFound} />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-              {insectData.map((insect, index) => (
-                <InsectCard key={index} {...insect} />
-              ))}
+            <div className="flex items-center justify-between mb-4">
+              <ExploreNav itemsFound={itemsFound} />
+              <NavActions viewMode={viewMode} onViewModeChange={setViewMode} />
             </div>
+
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {insectData.map((insect, index) => (
+                  <InsectCard key={index} {...insect} />
+                ))}
+              </div>
+            ) : (
+              <InsectList insects={insectData} />
+            )}
           </div>
         </div>
       </div>
     </SidebarProvider>
-  );
+  )
 }
