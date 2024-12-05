@@ -46,18 +46,74 @@ interface NavActionsProps {
   onNewInsect?: () => void
 }
 
+interface InsectFormData {
+  id?: number
+  nome: string
+  localColeta: string
+  dataColeta: Date | undefined
+  nomeColetor: string
+  tag: string
+  familia: string
+  genero: string
+  ordem: string
+}
+
 export function NavActions({ viewMode, onViewModeChange, onNewInsect }: NavActionsProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isFormOpen, setIsFormOpen] = React.useState(false)
 
   const handleNewInsect = () => {
-    setIsOpen(false) // fecha o menu
-    setIsFormOpen(true) // abre o formulário
+    setIsOpen(false)
+    setIsFormOpen(true)
   }
 
-  const handleInsectSubmit = (data: InsectFormData) => {
-    // Aqui você pode implementar a lógica para salvar o novo inseto
-    console.log('Novo inseto:', data)
+  const handleInsectSubmit = async (data: InsectFormData) => {
+    try {
+      if (!data.dataColeta) {
+        alert('Por favor, selecione uma data');
+        return;
+      }
+
+      const payload = {
+        nome: data.nome,
+        localColeta: data.localColeta,
+        dataColeta: data.dataColeta.toISOString().split('T')[0],
+        nomeColetor: data.nomeColetor,
+        tag: data.tag,
+        familia: data.familia,
+        genero: data.genero,
+        ordem: data.ordem,
+        id: null
+      };
+
+      console.log('Enviando dados:', payload);
+
+      const response = await fetch('http://localhost:8080/api/insetos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro ao salvar: ${errorText}`);
+      }
+
+      const savedInsect = await response.json();
+      console.log('Inseto salvo com sucesso:', savedInsect);
+      
+      setIsFormOpen(false); // Fecha o formulário após salvar
+      // Aqui você pode adicionar uma função de callback para atualizar a lista
+      if (onNewInsect) {
+        onNewInsect();
+      }
+    } catch (error) {
+      console.error('Erro ao salvar inseto:', error);
+      alert('Erro ao salvar o inseto. Verifique o console para mais detalhes.');
+    }
   }
 
   const data = [

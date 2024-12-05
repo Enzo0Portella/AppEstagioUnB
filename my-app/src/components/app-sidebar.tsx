@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/sidebar"
 import { SpotlightSearch } from "@/components/spotlight-search"
 import { useHotkeys } from "react-hotkeys-hook"
+import { type Insect, type InsectFormData } from "@/types/insect"
+import { InsectFormDialog } from "@/components/insect-form-dialog"
 
 const data = {
   teams: [
@@ -90,10 +92,18 @@ const data = {
   ],
 }
 
-export function AppSidebar({ 
-  insectData = [],
-  ...props 
-}: React.ComponentProps<typeof Sidebar> & { insectData?: any[] }) {
+interface NavMainItemProps {
+  title: string
+  url?: string
+  icon: React.ComponentType
+  badge?: string
+  isActive?: boolean
+  onClick?: () => void
+}
+
+export function AppSidebar({ insectData }: { insectData: Insect[] }) {
+  const [open, setOpen] = React.useState(false)
+  const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
   const [spotlightOpen, setSpotlightOpen] = React.useState(false)
 
   // Adicionar atalho de teclado (Command+K ou Ctrl+K)
@@ -101,6 +111,10 @@ export function AppSidebar({
     event.preventDefault()
     setSpotlightOpen(true)
   })
+
+  const handleInsectSelect = (insect: Insect) => {
+    setSelectedInsect(insect);
+  }
 
   const handleSearchClick = () => {
     setSpotlightOpen(true)
@@ -119,21 +133,54 @@ export function AppSidebar({
 
   return (
     <>
-      <Sidebar className="border-r-0" {...props}>
+      <Sidebar className="border-r">
         <SidebarHeader>
           <TeamSwitcher teams={data.teams} />
-          <NavMain items={navMainWithHandlers as NavMainItemProps[]} />
+          <NavMain items={navMainWithHandlers} />
         </SidebarHeader>
         <SidebarContent>
           <NavSecondary items={data.navSecondary} className="mt-auto" />
         </SidebarContent>
         <SidebarRail />
       </Sidebar>
-
+      
       <SpotlightSearch 
         open={spotlightOpen}
         onOpenChange={setSpotlightOpen}
         insects={insectData}
+        onSelect={handleInsectSelect}
+      />
+
+      <InsectFormDialog
+        open={!!selectedInsect}
+        onOpenChange={(open: boolean) => !open && setSelectedInsect(null)}
+        onSubmit={async (data: InsectFormData) => {
+          try {
+            const response = await fetch(`http://localhost:8080/api/insetos/${selectedInsect?.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                ...data,
+                dataColeta: data.dataColeta?.toISOString().split('T')[0],
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Erro ao atualizar inseto');
+            }
+
+            setSelectedInsect(null);
+          } catch (error) {
+            console.error('Erro ao atualizar:', error);
+          }
+        }}
+        isEditing={true}
+        initialData={selectedInsect ? {
+          ...selectedInsect,
+          dataColeta: new Date(selectedInsect.dataColeta)
+        } : undefined}
       />
     </>
   )

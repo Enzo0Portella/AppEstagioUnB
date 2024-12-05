@@ -142,29 +142,92 @@ interface InsectFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit?: (data: InsectFormData) => void
+  onDelete?: () => void
+  isEditing?: boolean
+  initialData?: InsectFormData
 }
 
 interface InsectFormData {
-  order: string
-  family: string
-  location: string
-  date: Date | undefined
-  author: string
+  id?: number
+  nome: string
+  localColeta: string
+  dataColeta: Date | undefined
+  nomeColetor: string
+  tag: string
+  familia: string
+  genero: string
+  ordem: string
 }
 
-export function InsectFormDialog({ open, onOpenChange, onSubmit }: InsectFormDialogProps) {
+function generateTag(): string {
+  // Gera 4 letras maiúsculas aleatórias
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const randomLetters = Array.from(
+    { length: 4 }, 
+    () => letters.charAt(Math.floor(Math.random() * letters.length))
+  ).join('');
+  
+  // Gera 4 números aleatórios
+  const numbers = Array.from(
+    { length: 4 }, 
+    () => Math.floor(Math.random() * 10)
+  ).join('');
+  
+  // Gera mais 3 letras maiúsculas aleatórias
+  const finalLetters = Array.from(
+    { length: 3 }, 
+    () => letters.charAt(Math.floor(Math.random() * letters.length))
+  ).join('');
+
+  // Combina tudo no formato XXXX0000XXX
+  return `${randomLetters}${numbers}${finalLetters}`;
+}
+
+export function InsectFormDialog({ 
+  open, 
+  onOpenChange, 
+  onSubmit, 
+  onDelete,
+  isEditing,
+  initialData 
+}: InsectFormDialogProps) {
   const [formData, setFormData] = React.useState<InsectFormData>({
-    order: "",
-    family: "",
-    location: "",
-    date: undefined,
-    author: ""
+    id: undefined,
+    nome: "",
+    localColeta: "",
+    dataColeta: undefined,
+    nomeColetor: "",
+    tag: generateTag(),
+    familia: "",
+    genero: "",
+    ordem: ""
   })
+
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        dataColeta: initialData.dataColeta ? new Date(initialData.dataColeta) : undefined
+      })
+    } else {
+      setFormData({
+        id: undefined,
+        nome: "",
+        localColeta: "",
+        dataColeta: undefined,
+        nomeColetor: "",
+        tag: generateTag(),
+        familia: "",
+        genero: "",
+        ordem: ""
+      })
+    }
+  }, [initialData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSubmit?.(formData)
-    setFormData({ order: "", family: "", location: "", date: undefined, author: "" })
+    setFormData({ id: undefined, nome: "", localColeta: "", dataColeta: undefined, nomeColetor: "", tag: "", familia: "", genero: "", ordem: "" })
     onOpenChange(false)
   }
 
@@ -174,44 +237,36 @@ export function InsectFormDialog({ open, onOpenChange, onSubmit }: InsectFormDia
   }
 
   const handleLocationChange = (value: string) => {
-    setFormData(prev => ({ ...prev, location: value }))
+    setFormData(prev => ({ ...prev, localColeta: value }))
   }
 
   const handleDateChange = (date: Date | undefined) => {
-    setFormData(prev => ({ ...prev, date }))
+    setFormData(prev => ({ ...prev, dataColeta: date }))
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-bg">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Inseto</DialogTitle>
+          <DialogTitle>
+            {isEditing ? 'Editar Inseto' : 'Adicionar Novo Inseto'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="order">Ordem</Label>
+            <Label htmlFor="nome">Nome</Label>
             <Input
-              id="order"
-              name="order"
-              value={formData.order}
+              id="nome"
+              name="nome"
+              value={formData.nome}
               onChange={handleChange}
               required
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="family">Família</Label>
-            <Input
-              id="family"
-              name="family"
-              value={formData.family}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="location">Localização</Label>
+            <Label htmlFor="localColeta">Local Coleta</Label>
             <Select
-              value={formData.location}
+              value={formData.localColeta}
               onValueChange={handleLocationChange}
               required
             >
@@ -231,31 +286,81 @@ export function InsectFormDialog({ open, onOpenChange, onSubmit }: InsectFormDia
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="date">Data</Label>
+            <Label htmlFor="dataColeta">Data Coleta</Label>
             <Input
-              id="date"
-              name="date"
+              id="dataColeta"
+              name="dataColeta"
               type="date"
-              value={formData.date ? formData.date.toISOString().split('T')[0] : ''}
+              value={formData.dataColeta ? formData.dataColeta.toISOString().split('T')[0] : ''}
               onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
               required
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="author">Autor</Label>
+            <Label htmlFor="nomeColetor">Nome Coletor</Label>
             <Input
-              id="author"
-              name="author"
-              value={formData.author}
+              id="nomeColetor"
+              name="nomeColetor"
+              value={formData.nomeColetor}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="tag">Tag</Label>
+            <div className="p-2 bg-muted rounded-md text-sm font-mono">
+              {formData.tag}
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="familia">Família</Label>
+            <Input
+              id="familia"
+              name="familia"
+              value={formData.familia}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="genero">Gênero</Label>
+            <Input
+              id="genero"
+              name="genero"
+              value={formData.genero}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ordem">Ordem</Label>
+            <Input
+              id="ordem"
+              name="ordem"
+              value={formData.ordem}
               onChange={handleChange}
               required
             />
           </div>
           <div className="flex justify-end gap-2">
+            {isEditing && onDelete && (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={() => {
+                  onDelete()
+                  onOpenChange(false)
+                }}
+              >
+                Excluir
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit">
+              {isEditing ? 'Atualizar' : 'Salvar'}
+            </Button>
           </div>
         </form>
       </DialogContent>
