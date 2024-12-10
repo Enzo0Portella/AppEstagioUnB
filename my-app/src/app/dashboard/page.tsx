@@ -19,6 +19,7 @@ import CardInsect from "@/components/insectcard";
 import InsectList from "@/components/explore-page/insect-list"
 import { InsectFormDialog } from "@/components/insect-form-dialog";
 import { Button } from "@/components/ui/button";
+import { InsectFormData } from '@/types/insect';
 
 interface Insect {
   id: number

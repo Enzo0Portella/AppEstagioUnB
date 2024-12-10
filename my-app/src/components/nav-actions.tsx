@@ -86,33 +86,30 @@ export function NavActions({ viewMode, onViewModeChange, onNewInsect }: NavActio
         id: null
       };
 
-      console.log('Enviando dados:', payload);
+      console.log('Criando novo inseto:', payload);
 
       const response = await fetch('http://localhost:8080/api/insetos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro ao salvar: ${errorText}`);
+        throw new Error('Erro ao salvar inseto');
       }
 
       const savedInsect = await response.json();
-      console.log('Inseto salvo com sucesso:', savedInsect);
+      console.log('Novo inseto criado:', savedInsect);
       
-      setIsFormOpen(false); // Fecha o formulário após salvar
-      // Aqui você pode adicionar uma função de callback para atualizar a lista
+      setIsFormOpen(false);
       if (onNewInsect) {
         onNewInsect();
       }
     } catch (error) {
-      console.error('Erro ao salvar inseto:', error);
-      alert('Erro ao salvar o inseto. Verifique o console para mais detalhes.');
+      console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar o inseto');
     }
   }
 

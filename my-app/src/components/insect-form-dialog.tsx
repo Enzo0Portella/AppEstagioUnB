@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -226,9 +226,42 @@ export function InsectFormDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit?.(formData)
-    setFormData({ id: undefined, nome: "", localColeta: "", dataColeta: undefined, nomeColetor: "", tag: "", familia: "", genero: "", ordem: "" })
-    onOpenChange(false)
+    
+    // Log para debug
+    console.log('Modo do formulário:', isEditing ? 'EDIÇÃO' : 'CRIAÇÃO');
+    console.log('Dados iniciais:', initialData);
+    console.log('Dados do formulário:', formData);
+    
+    if (isEditing && initialData?.id) {
+      // Se estiver editando, mantém o ID e a tag original
+      onSubmit?.({
+        ...formData,
+        id: initialData.id,
+        tag: initialData.tag
+      });
+      console.log('Enviando para atualização - ID:', initialData.id);
+    } else {
+      // Se estiver criando, usa os dados do formulário com nova tag
+      onSubmit?.(formData);
+      console.log('Enviando para criação - Nova tag:', formData.tag);
+    }
+
+    // Limpa o formulário apenas se não estiver editando
+    if (!isEditing) {
+      setFormData({
+        id: undefined,
+        nome: "",
+        localColeta: "",
+        dataColeta: undefined,
+        nomeColetor: "",
+        tag: generateTag(),
+        familia: "",
+        genero: "",
+        ordem: ""
+      });
+    }
+    
+    onOpenChange(false);
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,6 +284,9 @@ export function InsectFormDialog({
           <DialogTitle>
             {isEditing ? 'Editar Inseto' : 'Adicionar Novo Inseto'}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? 'Atualize os dados do inseto' : 'Preencha os dados do novo inseto'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid gap-2">

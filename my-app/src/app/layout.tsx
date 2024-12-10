@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google"; // Importa a fonte Inter do Google Fonts
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
 // Define a fonte Inter
 const inter = Inter({
@@ -15,14 +16,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="pt-br">
-      <body className={`${inter.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
         {children}
       </body>
     </html>
-  );
+  )
 }

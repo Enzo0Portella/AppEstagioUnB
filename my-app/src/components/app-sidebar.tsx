@@ -14,7 +14,9 @@ import {
   Settings2,
   Snail,
   Sparkles,
+  SquareUserRound,
   Trash2,
+  User,
 } from "lucide-react"
 
 import { NavFavorites } from "@/components/nav-favorites"
@@ -31,24 +33,14 @@ import {
 import { SpotlightSearch } from "@/components/spotlight-search"
 import { useHotkeys } from "react-hotkeys-hook"
 import { type Insect, type InsectFormData } from "@/types/insect"
-import { InsectFormDialog } from "@/components/insect-form-dialog"
+import { EditInsectDialog } from "@/components/edit-insect-dialog"
 
 const data = {
   teams: [
     {
-      name: "Acme Inc",
-      logo: Command,
+      name: "UNB team",
+      logo: User,
       plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
     },
   ],
   navMain: [
@@ -102,25 +94,24 @@ interface NavMainItemProps {
 }
 
 export function AppSidebar({ insectData }: { insectData: Insect[] }) {
-  const [open, setOpen] = React.useState(false)
-  const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
   const [spotlightOpen, setSpotlightOpen] = React.useState(false)
+  const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
 
-  // Adicionar atalho de teclado (Command+K ou Ctrl+K)
   useHotkeys('mod+k', (event) => {
     event.preventDefault()
     setSpotlightOpen(true)
   })
 
   const handleInsectSelect = (insect: Insect) => {
+    console.log('AppSidebar - Abrindo inseto para edição:', insect);
     setSelectedInsect(insect);
   }
 
   const handleSearchClick = () => {
-    setSpotlightOpen(true)
+    console.log('AppSidebar - Abrindo busca');
+    setSpotlightOpen(true);
   }
 
-  // Modificar o data.navMain para incluir o handler do click
   const navMainWithHandlers = data.navMain.map(item => {
     if (item.title === "Buscar") {
       return {
@@ -130,6 +121,50 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
     }
     return item
   })
+
+  const handleUpdateInsect = async (data: InsectFormData) => {
+    try {
+      if (!selectedInsect?.id) {
+        console.error('Tentativa de atualizar sem ID');
+        return;
+      }
+
+      const payload = {
+        nome: data.nome,
+        localColeta: data.localColeta,
+        dataColeta: data.dataColeta?.toISOString().split('T')[0],
+        nomeColetor: data.nomeColetor,
+        tag: data.tag,
+        familia: data.familia,
+        genero: data.genero,
+        ordem: data.ordem,
+        id: selectedInsect.id
+      };
+
+      console.log('AppSidebar - Enviando atualização:', payload);
+
+      const response = await fetch('http://localhost:8080/api/insetos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar inseto');
+      }
+
+      const updatedInsect = await response.json();
+      console.log('AppSidebar - Inseto atualizado com sucesso:', updatedInsect);
+      
+      setSelectedInsect(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Erro ao atualizar:', error);
+      alert('Erro ao atualizar o inseto');
+    }
+  }
 
   return (
     <>
@@ -151,36 +186,11 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
         onSelect={handleInsectSelect}
       />
 
-      <InsectFormDialog
+      <EditInsectDialog
         open={!!selectedInsect}
-        onOpenChange={(open: boolean) => !open && setSelectedInsect(null)}
-        onSubmit={async (data: InsectFormData) => {
-          try {
-            const response = await fetch(`http://localhost:8080/api/insetos/${selectedInsect?.id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                ...data,
-                dataColeta: data.dataColeta?.toISOString().split('T')[0],
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error('Erro ao atualizar inseto');
-            }
-
-            setSelectedInsect(null);
-          } catch (error) {
-            console.error('Erro ao atualizar:', error);
-          }
-        }}
-        isEditing={true}
-        initialData={selectedInsect ? {
-          ...selectedInsect,
-          dataColeta: new Date(selectedInsect.dataColeta)
-        } : undefined}
+        onOpenChange={(open) => !open && setSelectedInsect(null)}
+        onSubmit={handleUpdateInsect}
+        insect={selectedInsect}
       />
     </>
   )

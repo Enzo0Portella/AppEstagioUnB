@@ -7,18 +7,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog-search"
-
-interface Insect {
-  id: number
-  nome: string
-  localColeta: string
-  dataColeta: string
-  nomeColetor: string
-  tag: string
-  familia: string
-  genero: string
-  ordem: string
-}
+import { type Insect } from "@/types/insect"
 
 interface SpotlightProps {
   open: boolean
@@ -29,32 +18,64 @@ interface SpotlightProps {
 
 export function SpotlightSearch({ open, onOpenChange, insects, onSelect }: SpotlightProps) {
   const [search, setSearch] = React.useState("")
-  const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
 
   const filteredInsects = React.useMemo(() => {
     if (!search || !insects) return insects || []
     
-    const searchLower = search.toLowerCase()
+    const searchTerms = search.toLowerCase().trim().split(/\s+/)
+    
     return insects.filter(insect => {
-      const searchableFields = [
-        insect.nome,
-        insect.ordem,
-        insect.familia,
-        insect.localColeta,
-        insect.nomeColetor,
-        insect.tag,
-        insect.genero
-      ]
-      
-      return searchableFields.some(field => 
-        field?.toLowerCase().includes(searchLower)
-      )
+      const searchableText = {
+        nome: insect.nome?.toLowerCase() || '',
+        ordem: insect.ordem?.toLowerCase() || '',
+        familia: insect.familia?.toLowerCase() || '',
+        localColeta: insect.localColeta?.toLowerCase() || '',
+        nomeColetor: insect.nomeColetor?.toLowerCase() || '',
+        tag: insect.tag?.toLowerCase() || '',
+        genero: insect.genero?.toLowerCase() || '',
+        dataColeta: new Date(insect.dataColeta).toLocaleDateString().toLowerCase(),
+        all: `${insect.nome} ${insect.ordem} ${insect.familia} ${insect.localColeta} ${insect.nomeColetor} ${insect.tag} ${insect.genero} ${new Date(insect.dataColeta).toLocaleDateString()}`.toLowerCase()
+      }
+
+      return searchTerms.every(term => {
+        const exactMatch = Object.entries(searchableText).some(([field, value]) => {
+          if (field === 'all') return false
+          return value.includes(term)
+        })
+
+        if (exactMatch) return true
+        return searchableText.all.includes(term)
+      })
     })
   }, [insects, search])
 
   const handleSelect = (insect: Insect) => {
+    console.log('SpotlightSearch - Inseto selecionado:', insect);
     onSelect?.(insect);
     onOpenChange(false);
+  }
+
+  const highlightMatch = (text: string) => {
+    if (!search.trim()) return text
+
+    const escapedTerms = search
+      .trim()
+      .split(/\s+/)
+      .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|')
+
+    const regex = new RegExp(`(${escapedTerms})`, 'gi')
+    const parts = text.split(regex)
+
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <mark key={i} className="bg-yellow-200 rounded-sm px-0.5">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    )
   }
 
   return (
@@ -66,7 +87,7 @@ export function SpotlightSearch({ open, onOpenChange, insects, onSelect }: Spotl
             <Command.Input
               value={search}
               onValueChange={setSearch}
-              placeholder="Buscar insetos..."
+              placeholder="Buscar por nome, ordem, família, local, coletor, tag, data..."
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
@@ -81,13 +102,18 @@ export function SpotlightSearch({ open, onOpenChange, insects, onSelect }: Spotl
                 className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
                 onSelect={() => handleSelect(insect)}
               >
-                <div className="flex flex-col">
-                  <span className="font-medium">{insect.nome}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {insect.ordem} - {insect.familia} • {insect.localColeta}
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">
+                    {highlightMatch(insect.nome)}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Coletor: {insect.nomeColetor} • Tag: {insect.tag}
+                    {highlightMatch(`${insect.ordem} - ${insect.familia}`)} • {highlightMatch(insect.localColeta)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Data: {highlightMatch(new Date(insect.dataColeta).toLocaleDateString())}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Coletor: {highlightMatch(insect.nomeColetor)} • Tag: {highlightMatch(insect.tag)}
                   </span>
                 </div>
               </Command.Item>
