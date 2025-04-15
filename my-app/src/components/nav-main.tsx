@@ -8,7 +8,7 @@ import {
 
 interface NavMainItemProps {
   title: string
-  url: string
+  url?: string
   icon: any
   isActive?: boolean
   badge?: string
@@ -31,7 +31,7 @@ export function NavMain({
             </SidebarMenuButton>
           ) : (
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <a href={item.url || "#"}>
                 <item.icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </a>

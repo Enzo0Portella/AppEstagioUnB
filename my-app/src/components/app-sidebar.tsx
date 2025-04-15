@@ -17,6 +17,7 @@ import {
   SquareUserRound,
   Trash2,
   User,
+  Plus,
 } from "lucide-react"
 
 import { NavFavorites } from "@/components/nav-favorites"
@@ -34,6 +35,8 @@ import { SpotlightSearch } from "@/components/spotlight-search"
 import { useHotkeys } from "react-hotkeys-hook"
 import { type Insect, type InsectFormData } from "@/types/insect"
 import { EditInsectDialog } from "@/components/edit-insect-dialog"
+import { useInsects } from '@/hooks/useInsects'
+import { InsectFormDialog } from "@/components/insect-form-dialog"
 
 const data = {
   teams: [
@@ -60,6 +63,10 @@ const data = {
       icon: BookMarked,
       badge: "10",
     },
+    {
+      title: "Novo Inseto",
+      icon: Plus,
+    }
   ],
   navSecondary: [
     {
@@ -96,6 +103,8 @@ interface NavMainItemProps {
 export function AppSidebar({ insectData }: { insectData: Insect[] }) {
   const [spotlightOpen, setSpotlightOpen] = React.useState(false)
   const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
+  const [newInsectFormOpen, setNewInsectFormOpen] = React.useState(false)
+  const { editInsect, addInsect } = useInsects();
 
   useHotkeys('mod+k', (event) => {
     event.preventDefault()
@@ -112,11 +121,22 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
     setSpotlightOpen(true);
   }
 
+  const handleNewInsectClick = () => {
+    console.log('AppSidebar - Abrindo formulário de novo inseto');
+    setNewInsectFormOpen(true);
+  }
+
   const navMainWithHandlers = data.navMain.map(item => {
     if (item.title === "Buscar") {
       return {
         ...item,
         onClick: handleSearchClick
+      }
+    }
+    if (item.title === "Novo Inseto") {
+      return {
+        ...item,
+        onClick: handleNewInsectClick
       }
     }
     return item
@@ -129,42 +149,38 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
         return;
       }
 
-      const payload = {
-        nome: data.nome,
-        localColeta: data.localColeta,
-        dataColeta: data.dataColeta?.toISOString().split('T')[0],
-        nomeColetor: data.nomeColetor,
-        tag: data.tag,
-        familia: data.familia,
-        genero: data.genero,
-        ordem: data.ordem,
+      const updatedData = {
+        ...data,
         id: selectedInsect.id
       };
 
-      console.log('AppSidebar - Enviando atualização:', payload);
-
-      const response = await fetch('http://localhost:8080/api/insetos', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar inseto');
-      }
-
-      const updatedInsect = await response.json();
-      console.log('AppSidebar - Inseto atualizado com sucesso:', updatedInsect);
+      const result = await editInsect(updatedData);
       
-      setSelectedInsect(null);
-      window.location.reload();
+      if (result) {
+        console.log('AppSidebar - Inseto atualizado com sucesso:', result);
+        setSelectedInsect(null);
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Erro ao atualizar:', error);
       alert('Erro ao atualizar o inseto');
     }
   }
+  
+  const handleCreateInsect = async (formData: InsectFormData) => {
+    try {
+      const result = await addInsect(formData);
+      
+      if (result) {
+        console.log('Novo inseto criado:', result);
+        setNewInsectFormOpen(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Erro ao criar inseto:', error);
+      alert('Erro ao criar o inseto');
+    }
+  };
 
   return (
     <>
@@ -191,6 +207,12 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
         onOpenChange={(open) => !open && setSelectedInsect(null)}
         onSubmit={handleUpdateInsect}
         insect={selectedInsect}
+      />
+      
+      <InsectFormDialog 
+        open={newInsectFormOpen}
+        onOpenChange={setNewInsectFormOpen}
+        onSubmit={handleCreateInsect}
       />
     </>
   )

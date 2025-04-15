@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/sidebar"
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
 import { InsectFormDialog } from "@/components/insect-form-dialog"
+import { useInsects } from '@/hooks/useInsects';
 
 export type ViewMode = "grid" | "list"
 
@@ -61,6 +62,7 @@ interface InsectFormData {
 export function NavActions({ viewMode, onViewModeChange, onNewInsect }: NavActionsProps) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isFormOpen, setIsFormOpen] = React.useState(false)
+  const { addInsect } = useInsects();
 
   const handleNewInsect = () => {
     setIsOpen(false)
@@ -69,43 +71,15 @@ export function NavActions({ viewMode, onViewModeChange, onNewInsect }: NavActio
 
   const handleInsectSubmit = async (data: InsectFormData) => {
     try {
-      if (!data.dataColeta) {
-        alert('Por favor, selecione uma data');
-        return;
-      }
-
-      const payload = {
-        nome: data.nome,
-        localColeta: data.localColeta,
-        dataColeta: data.dataColeta.toISOString().split('T')[0],
-        nomeColetor: data.nomeColetor,
-        tag: data.tag,
-        familia: data.familia,
-        genero: data.genero,
-        ordem: data.ordem,
-        id: null
-      };
-
-      console.log('Criando novo inseto:', payload);
-
-      const response = await fetch('http://localhost:8080/api/insetos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao salvar inseto');
-      }
-
-      const savedInsect = await response.json();
-      console.log('Novo inseto criado:', savedInsect);
+      const result = await addInsect(data);
       
-      setIsFormOpen(false);
-      if (onNewInsect) {
-        onNewInsect();
+      if (result) {
+        console.log('Novo inseto criado:', result);
+        setIsFormOpen(false);
+        
+        if (onNewInsect) {
+          onNewInsect();
+        }
       }
     } catch (error) {
       console.error('Erro ao salvar:', error);

@@ -157,6 +157,7 @@ interface InsectFormData {
   familia: string
   genero: string
   ordem: string
+  imagemUrl?: string
 }
 
 function generateTag(): string {
@@ -200,7 +201,8 @@ export function InsectFormDialog({
     tag: generateTag(),
     familia: "",
     genero: "",
-    ordem: ""
+    ordem: "",
+    imagemUrl: ""
   })
 
   React.useEffect(() => {
@@ -219,7 +221,8 @@ export function InsectFormDialog({
         tag: generateTag(),
         familia: "",
         genero: "",
-        ordem: ""
+        ordem: "",
+        imagemUrl: ""
       })
     }
   }, [initialData])
@@ -257,7 +260,8 @@ export function InsectFormDialog({
         tag: generateTag(),
         familia: "",
         genero: "",
-        ordem: ""
+        ordem: "",
+        imagemUrl: ""
       });
     }
     
@@ -279,124 +283,143 @@ export function InsectFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-bg">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Inseto' : 'Adicionar Novo Inseto'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Inseto' : 'Adicionar Novo Inseto'}</DialogTitle>
           <DialogDescription>
-            {isEditing ? 'Atualize os dados do inseto' : 'Preencha os dados do novo inseto'}
+            {isEditing 
+              ? 'Edite os detalhes do inseto abaixo e clique em salvar quando terminar.'
+              : 'Preencha os detalhes do novo inseto abaixo e clique em salvar quando terminar.'}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid gap-2">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
             <Label htmlFor="nome">Nome</Label>
             <Input
               id="nome"
               name="nome"
+              placeholder="Nome do inseto"
               value={formData.nome}
               onChange={handleChange}
-              required
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="localColeta">Local Coleta</Label>
-            <Select
-              value={formData.localColeta}
+
+          <div className="space-y-1">
+            <Label htmlFor="ordem">Ordem</Label>
+            <Input
+              id="ordem"
+              name="ordem"
+              placeholder="Ordem"
+              value={formData.ordem}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="familia">Família</Label>
+            <Input
+              id="familia"
+              name="familia"
+              placeholder="Família"
+              value={formData.familia}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="genero">Gênero</Label>
+            <Input
+              id="genero"
+              name="genero"
+              placeholder="Gênero"
+              value={formData.genero}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="localColeta">Local de Coleta</Label>
+            <Select 
+              value={formData.localColeta} 
               onValueChange={handleLocationChange}
-              required
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma localização" />
+              <SelectTrigger id="localColeta">
+                <SelectValue placeholder="Selecione uma cidade" />
               </SelectTrigger>
               <SelectContent>
-                {MAJOR_CITIES.map((city) => (
-                  <SelectItem 
-                    key={city.id} 
-                    value={`${city.nome} - ${city.uf}`}
-                  >
-                    {city.nome} - {city.uf}
+                {MAJOR_CITIES.map(city => (
+                  <SelectItem key={city.id} value={`${city.nome}, ${city.uf}`}>
+                    {city.nome}, {city.uf}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="dataColeta">Data Coleta</Label>
+
+          <div className="space-y-1">
+            <Label htmlFor="nomeColetor">Nome do Coletor</Label>
+            <Input
+              id="nomeColetor"
+              name="nomeColetor"
+              placeholder="Nome do coletor"
+              value={formData.nomeColetor}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="dataColeta">Data de Coleta</Label>
             <Input
               id="dataColeta"
               name="dataColeta"
               type="date"
               value={formData.dataColeta ? formData.dataColeta.toISOString().split('T')[0] : ''}
-              onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
-              required
+              onChange={(e) => {
+                const date = e.target.value ? new Date(e.target.value) : undefined;
+                handleDateChange(date);
+              }}
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="nomeColetor">Nome Coletor</Label>
-            <Input
-              id="nomeColetor"
-              name="nomeColetor"
-              value={formData.nomeColetor}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
+
+          <div className="space-y-1">
             <Label htmlFor="tag">Tag</Label>
-            <div className="p-2 bg-muted rounded-md text-sm font-mono">
-              {formData.tag}
-            </div>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="familia">Família</Label>
             <Input
-              id="familia"
-              name="familia"
-              value={formData.familia}
+              id="tag"
+              name="tag"
+              placeholder="Tag"
+              value={formData.tag}
               onChange={handleChange}
-              required
+              disabled
+              className="bg-muted"
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="genero">Gênero</Label>
+          
+          <div className="space-y-1">
+            <Label htmlFor="imagemUrl">URL da Imagem</Label>
             <Input
-              id="genero"
-              name="genero"
-              value={formData.genero}
+              id="imagemUrl"
+              name="imagemUrl"
+              placeholder="URL da imagem do inseto"
+              value={formData.imagemUrl || ''}
               onChange={handleChange}
-              required
             />
+            <p className="text-xs text-muted-foreground">Insira a URL completa de uma imagem (opcional)</p>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="ordem">Ordem</Label>
-            <Input
-              id="ordem"
-              name="ordem"
-              value={formData.ordem}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="flex justify-end gap-2">
+
+          <div className="flex justify-between mt-6">
             {isEditing && onDelete && (
-              <Button 
-                type="button" 
-                variant="destructive" 
-                onClick={() => {
-                  onDelete()
-                  onOpenChange(false)
-                }}
-              >
+              <Button type="button" variant="destructive" onClick={onDelete}>
                 Excluir
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit">
-              {isEditing ? 'Atualizar' : 'Salvar'}
-            </Button>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {isEditing ? 'Salvar Alterações' : 'Salvar Inseto'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

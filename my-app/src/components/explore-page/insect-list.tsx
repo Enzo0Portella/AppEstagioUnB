@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table"
 
 type InsectListProps = {
-  insects: {
+  items: {
     order: string
     family: string
     location: string
@@ -21,7 +21,7 @@ type InsectListProps = {
   }[]
 }
 
-const InsectList: React.FC<InsectListProps> = ({ insects }) => {
+const InsectList: React.FC<InsectListProps> = ({ items }) => {
   return (
     <div className="rounded-md border">
       <Table>
@@ -36,7 +36,7 @@ const InsectList: React.FC<InsectListProps> = ({ insects }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {insects.map((insect, index) => (
+          {items.map((insect, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium">{insect.order}</TableCell>
               <TableCell>{insect.family}</TableCell>

@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from 'react';
 import type { ViewMode } from "@/components/nav-actions";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -20,87 +21,52 @@ import InsectList from "@/components/explore-page/insect-list"
 import { InsectFormDialog } from "@/components/insect-form-dialog";
 import { Button } from "@/components/ui/button";
 import { InsectFormData } from '@/types/insect';
-
-interface Insect {
-  id: number
-  nome: string
-  localColeta: string
-  dataColeta: string
-  nomeColetor: string
-  tag: string
-  familia: string
-  genero: string
-  ordem: string
-}
+import { useInsects } from '@/hooks/useInsects';
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [selectedInsect, setSelectedInsect] = useState<Insect | null>(null);
-  const [insects, setInsects] = useState<Insect[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const {
+    insects,
+    isLoading,
+    error,
+    selectedInsect,
+    setSelectedInsect,
+    fetchInsects,
+    addInsect,
+    editInsect,
+    removeInsect
+  } = useInsects();
 
   useEffect(() => {
     fetchInsects();
-  }, []);
+  }, [fetchInsects]);
 
-  const fetchInsects = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/insetos');
-      const data = await response.json();
-      setInsects(data);
-    } catch (error) {
-      console.error('Erro ao buscar insetos:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async (formData: Insect) => {
-    try {
-      const payload = {
-        ...formData,
-        id: null,
-        dataColeta: formData.dataColeta
-      };
-
-      console.log('Payload final:', payload);
-
-      const response = await fetch('http://localhost:8080/api/insetos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Erro ao salvar: ${errorText}`);
+  const handleSubmit = async (formData: InsectFormData) => {
+    if (formData.id) {
+      // Editar inseto existente
+      const result = await editInsect(formData);
+      if (result) {
+        setSelectedInsect(null);
+        console.log('Inseto atualizado com sucesso:', result);
       }
-
-      const savedInsect = await response.json();
-      console.log('Inseto salvo com sucesso:', savedInsect);
-      
-      fetchInsects();
-      setSelectedInsect(null);
-    } catch (error) {
-      console.error('Erro detalhado:', error);
-      alert('Erro ao salvar o inseto. Verifique o console para mais detalhes.');
+    } else {
+      // Criar novo inseto
+      const result = await addInsect(formData);
+      if (result) {
+        setSelectedInsect(null);
+        console.log('Inseto criado com sucesso:', result);
+      }
     }
   };
 
   const handleDelete = async () => {
     if (!selectedInsect?.id) return;
     
-    try {
-      await fetch(`http://localhost:8080/api/insetos/${selectedInsect.id}`, {
-        method: 'DELETE',
-      });
-      fetchInsects();
+    const success = await removeInsect(selectedInsect.id);
+    if (success) {
       setSelectedInsect(null);
-    } catch (error) {
-      console.error('Erro ao excluir inseto:', error);
+      console.log('Inseto excluído com sucesso');
     }
   };
 
@@ -113,8 +79,12 @@ export default function DashboardPage() {
     isFavorite: false
   }));
 
-  if (isLoading) {
+  if (isLoading && insects.length === 0) {
     return <div>Carregando...</div>;
+  }
+
+  if (error && insects.length === 0) {
+    return <div>Erro ao carregar insetos: {error}</div>;
   }
 
   return (
@@ -143,60 +113,27 @@ export default function DashboardPage() {
             />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-8 md:gap-8">
           {viewMode === "grid" ? (
-            <div className="grid gap-4 auto-rows-min md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {insects.map((insect) => (
-                <CardInsect
+                <CardInsect 
                   key={insect.id}
-                  nome={insect.nome}
-                  ordem={insect.ordem}
-                  familia={insect.familia}
-                  location={insect.localColeta}
-                  date={new Date(insect.dataColeta).toLocaleDateString()}
-                  author={insect.nomeColetor}
+                  insect={insect}
                   onClick={() => setSelectedInsect(insect)}
                 />
               ))}
             </div>
           ) : (
-            <InsectList 
-              insects={insectsForList}
-              onSelect={(index: number) => setSelectedInsect(insects[index])}
-            />
+            <InsectList items={insectsForList} />
           )}
-        </div>
+        </main>
       </SidebarInset>
+
       <InsectFormDialog
         open={selectedInsect !== null}
         onOpenChange={(open) => !open && setSelectedInsect(null)}
-        onSubmit={async (data: InsectFormData) => {
-          if (!data.dataColeta) {
-            alert('Por favor, selecione uma data');
-            return;
-          }
-
-          const insect: Insect = {
-            nome: data.nome,
-            localColeta: data.localColeta,
-            dataColeta: data.dataColeta.toISOString().split('T')[0],
-            nomeColetor: data.nomeColetor,
-            tag: data.tag,
-            familia: data.familia,
-            genero: data.genero,
-            ordem: data.ordem,
-            id: 0
-          };
-
-          console.log('Dados sendo enviados:', insect);
-
-          try {
-            await handleSubmit(insect);
-          } catch (error) {
-            console.error('Erro ao enviar dados:', error);
-            alert('Erro ao salvar o inseto');
-          }
-        }}
+        onSubmit={handleSubmit}
         onDelete={handleDelete}
         isEditing={!!selectedInsect?.id}
         initialData={selectedInsect ? {
