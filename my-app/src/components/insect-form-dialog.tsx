@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useColetores } from "@/hooks/useColetores"
 
 const MAJOR_CITIES = [
     { id: 3550308, nome: "São Paulo", uf: "SP" },
@@ -158,6 +159,7 @@ interface InsectFormData {
   genero: string
   ordem: string
   imagemUrl?: string
+  idColetor: number
 }
 
 function generateTag(): string {
@@ -192,6 +194,7 @@ export function InsectFormDialog({
   isEditing,
   initialData 
 }: InsectFormDialogProps) {
+  const { coletores, loading: loadingColetores } = useColetores();
   const [formData, setFormData] = React.useState<InsectFormData>({
     id: undefined,
     nome: "",
@@ -202,14 +205,16 @@ export function InsectFormDialog({
     familia: "",
     genero: "",
     ordem: "",
-    imagemUrl: ""
+    imagemUrl: "",
+    idColetor: 1
   })
 
   React.useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
-        dataColeta: initialData.dataColeta ? new Date(initialData.dataColeta) : undefined
+        dataColeta: initialData.dataColeta ? new Date(initialData.dataColeta) : undefined,
+        idColetor: initialData.idColetor || 1
       })
     } else {
       setFormData({
@@ -222,7 +227,8 @@ export function InsectFormDialog({
         familia: "",
         genero: "",
         ordem: "",
-        imagemUrl: ""
+        imagemUrl: "",
+        idColetor: 1
       })
     }
   }, [initialData])
@@ -230,22 +236,29 @@ export function InsectFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Garante que idColetor seja um número
+    const idColetorNumero = Number(formData.idColetor) || 1;
+    
     // Log para debug
     console.log('Modo do formulário:', isEditing ? 'EDIÇÃO' : 'CRIAÇÃO');
     console.log('Dados iniciais:', initialData);
-    console.log('Dados do formulário:', formData);
+    console.log('Dados do formulário:', {...formData, idColetor: idColetorNumero});
     
     if (isEditing && initialData?.id) {
       // Se estiver editando, mantém o ID e a tag original
       onSubmit?.({
         ...formData,
         id: initialData.id,
-        tag: initialData.tag
+        tag: initialData.tag,
+        idColetor: idColetorNumero
       });
       console.log('Enviando para atualização - ID:', initialData.id);
     } else {
       // Se estiver criando, usa os dados do formulário com nova tag
-      onSubmit?.(formData);
+      onSubmit?.({
+        ...formData,
+        idColetor: idColetorNumero
+      });
       console.log('Enviando para criação - Nova tag:', formData.tag);
     }
 
@@ -261,7 +274,8 @@ export function InsectFormDialog({
         familia: "",
         genero: "",
         ordem: "",
-        imagemUrl: ""
+        imagemUrl: "",
+        idColetor: 1
       });
     }
     
@@ -283,7 +297,7 @@ export function InsectFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto bg-white border border-zinc-800 rounded-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar Inseto' : 'Adicionar Novo Inseto'}</DialogTitle>
           <DialogDescription>
@@ -392,6 +406,45 @@ export function InsectFormDialog({
               disabled
               className="bg-muted"
             />
+          </div>
+          
+          <div className="space-y-1">
+            <Label htmlFor="idColetor">Coletor</Label>
+            <Select
+              value={formData.idColetor?.toString() || ''}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, idColetor: Number(value) || 1 }))}
+            >
+              <SelectTrigger id="idColetor">
+                <SelectValue placeholder="Selecione um coletor" />
+              </SelectTrigger>
+              <SelectContent>
+                {loadingColetores ? (
+                  <SelectItem value="loading" disabled>Carregando coletores...</SelectItem>
+                ) : coletores.length === 0 ? (
+                  <SelectItem value="none" disabled>Nenhum coletor cadastrado</SelectItem>
+                ) : (
+                  coletores.map(coletor => (
+                    <SelectItem 
+                      key={coletor.idColetor} 
+                      value={coletor.idColetor.toString()}
+                    >
+                      {coletor.nomeColetor} (ID: {coletor.idColetor})
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <div className="flex justify-between">
+              <p className="text-xs text-muted-foreground">Selecione um coletor (obrigatório)</p>
+              <a 
+                href="/coletores" 
+                className="text-xs text-blue-500 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Gerenciar coletores
+              </a>
+            </div>
           </div>
           
           <div className="space-y-1">

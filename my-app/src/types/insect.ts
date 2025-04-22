@@ -22,6 +22,8 @@ export interface Insect {
   ordem: string
   /** URL da imagem do inseto (opcional) */
   imagemUrl?: string
+  /** ID do coletor responsável pela coleta */
+  idColetor: number
 }
 
 /**
@@ -49,4 +51,6 @@ export interface InsectFormData {
   ordem: string
   /** URL da imagem do inseto (opcional) */
   imagemUrl?: string
+  /** ID do coletor na base de dados */
+  idColetor: number
 } 

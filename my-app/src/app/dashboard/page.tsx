@@ -22,6 +22,8 @@ import { InsectFormDialog } from "@/components/insect-form-dialog";
 import { Button } from "@/components/ui/button";
 import { InsectFormData } from '@/types/insect';
 import { useInsects } from '@/hooks/useInsects';
+import { Users } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -106,6 +108,12 @@ export default function DashboardPage() {
             </Breadcrumb>
           </div>
           <div className="ml-auto px-3 flex items-center gap-2">
+            <Link href="/coletores">
+              <Button variant="outline" size="sm" className="mr-2">
+                <Users className="h-4 w-4 mr-2" />
+                Gerenciar Coletores
+              </Button>
+            </Link>
             <NavActions 
               viewMode={viewMode}
               onViewModeChange={setViewMode}
@@ -138,7 +146,8 @@ export default function DashboardPage() {
         isEditing={!!selectedInsect?.id}
         initialData={selectedInsect ? {
           ...selectedInsect,
-          dataColeta: new Date(selectedInsect.dataColeta)
+          dataColeta: new Date(selectedInsect.dataColeta),
+          idColetor: selectedInsect.idColetor || 1
         } : undefined}
       />
     </SidebarProvider>

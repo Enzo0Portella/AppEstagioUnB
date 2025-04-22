@@ -3,11 +3,12 @@
  */
 
 // URL base da API
-export const API_BASE_URL = 'http://localhost:8080/api';
+export const API_BASE_URL = 'http://localhost:8080';
 
 // Endpoints específicos
 export const API_ENDPOINTS = {
-  INSECTS: `${API_BASE_URL}/insetos`
+  INSECTS: `${API_BASE_URL}/api/insetos`,
+  COLLECTORS: `${API_BASE_URL}/api/coletor`
 };
 
 // Headers padrão para requisições

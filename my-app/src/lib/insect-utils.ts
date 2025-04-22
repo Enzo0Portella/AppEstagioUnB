@@ -17,7 +17,9 @@ export function formDataToApiInsect(formData: InsectFormData): Omit<Insect, 'id'
     tag: formData.tag,
     familia: formData.familia,
     genero: formData.genero,
-    ordem: formData.ordem
+    ordem: formData.ordem,
+    idColetor: formData.idColetor,
+    imagemUrl: formData.imagemUrl
   };
 
   if (formData.id !== undefined) {
@@ -44,7 +46,9 @@ export function apiInsectToFormData(insect: Insect): InsectFormData {
     tag: insect.tag,
     familia: insect.familia,
     genero: insect.genero,
-    ordem: insect.ordem
+    ordem: insect.ordem,
+    idColetor: insect.idColetor,
+    imagemUrl: insect.imagemUrl
   };
 }
 

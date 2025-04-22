@@ -53,7 +53,7 @@ const data = {
     },
     {
       title: "Home",
-      url: "#",
+      url: "/dashboard",
       icon: Snail,
       isActive: true,
     },
@@ -66,6 +66,11 @@ const data = {
     {
       title: "Novo Inseto",
       icon: Plus,
+    },
+    {
+      title: "Coletores",
+      url: "/coletores",
+      icon: SquareUserRound,
     }
   ],
   navSecondary: [
@@ -100,7 +105,7 @@ interface NavMainItemProps {
   onClick?: () => void
 }
 
-export function AppSidebar({ insectData }: { insectData: Insect[] }) {
+export function AppSidebar({ insectData }: { insectData?: Insect[] }) {
   const [spotlightOpen, setSpotlightOpen] = React.useState(false)
   const [selectedInsect, setSelectedInsect] = React.useState<Insect | null>(null)
   const [newInsectFormOpen, setNewInsectFormOpen] = React.useState(false)
@@ -198,7 +203,7 @@ export function AppSidebar({ insectData }: { insectData: Insect[] }) {
       <SpotlightSearch 
         open={spotlightOpen}
         onOpenChange={setSpotlightOpen}
-        insects={insectData}
+        insects={insectData || []}
         onSelect={handleInsectSelect}
       />
 
