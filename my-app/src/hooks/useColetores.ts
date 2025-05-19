@@ -152,71 +152,23 @@ export const useColetores = () => {
   // Excluir um coletor
   const deleteColetor = async (id: number): Promise<boolean> => {
     try {
-      console.log('Tentando excluir coletor ID:', id);
+      console.log('Excluindo coletor ID:', id, 'usando DELETE na URL:', `${API_URL}/${id}`);
       
-      // Primeira tentativa: GET para /delete/{id}
-      try {
-        console.log('Tentativa 1: GET para /delete/{id}');
-        const response = await fetch(`${API_URL}/delete/${id}`, {
-          method: 'GET',
-          headers: DEFAULT_HEADERS
-        });
-        
-        console.log('Status da resposta (Tentativa 1):', response.status);
-        
-        if (response.ok) {
-          console.log('Exclusão bem-sucedida na tentativa 1');
-          // Atualiza o estado removendo o coletor
-          setColetores(prev => prev.filter(c => c.idColetor !== id));
-          return true;
-        }
-      } catch (error) {
-        console.log('Falha na tentativa 1:', error);
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: DEFAULT_HEADERS
+      });
+      
+      console.log('Status da resposta:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao excluir coletor: ${response.status}`);
       }
       
-      // Segunda tentativa: POST para /delete com ID no body
-      try {
-        console.log('Tentativa 2: POST para /delete com ID no body');
-        const altResponse = await fetch(`${API_URL}/delete`, {
-          method: 'POST',
-          headers: DEFAULT_HEADERS,
-          body: JSON.stringify({ idColetor: id }),
-        });
-        
-        console.log('Status da resposta (Tentativa 2):', altResponse.status);
-        
-        if (altResponse.ok) {
-          console.log('Exclusão bem-sucedida na tentativa 2');
-          // Atualiza o estado removendo o coletor
-          setColetores(prev => prev.filter(c => c.idColetor !== id));
-          return true;
-        }
-      } catch (error) {
-        console.log('Falha na tentativa 2:', error);
-      }
-      
-      // Terceira tentativa: GET com parâmetro de consulta
-      try {
-        console.log('Tentativa 3: GET com parâmetro de consulta');
-        const response = await fetch(`${API_URL}/delete?id=${id}`, {
-          method: 'GET',
-          headers: DEFAULT_HEADERS
-        });
-        
-        console.log('Status da resposta (Tentativa 3):', response.status);
-        
-        if (response.ok) {
-          console.log('Exclusão bem-sucedida na tentativa 3');
-          // Atualiza o estado removendo o coletor
-          setColetores(prev => prev.filter(c => c.idColetor !== id));
-          return true;
-        }
-      } catch (error) {
-        console.log('Falha na tentativa 3:', error);
-      }
-      
-      // Se todas as tentativas falharem
-      throw new Error(`Não foi possível excluir o coletor ID ${id} após múltiplas tentativas`);
+      // Atualiza o estado removendo o coletor
+      setColetores(prev => prev.filter(c => c.idColetor !== id));
+      console.log('Coletor excluído com sucesso!');
+      return true;
     } catch (error) {
       console.error('Erro ao excluir coletor:', error);
       throw error;

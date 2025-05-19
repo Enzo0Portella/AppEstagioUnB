@@ -194,7 +194,7 @@ export function InsectFormDialog({
   isEditing,
   initialData 
 }: InsectFormDialogProps) {
-  const { coletores, loading: loadingColetores } = useColetores();
+  const { coletores, loading: loadingColetores, fetchColetores } = useColetores();
   const [formData, setFormData] = React.useState<InsectFormData>({
     id: undefined,
     nome: "",
@@ -209,6 +209,7 @@ export function InsectFormDialog({
     idColetor: 1
   })
 
+  // Atualiza os dados do formulário quando o initialData muda
   React.useEffect(() => {
     if (initialData) {
       setFormData({
@@ -232,6 +233,31 @@ export function InsectFormDialog({
       })
     }
   }, [initialData])
+
+  // Atualiza a lista de coletores quando o modal é aberto
+  React.useEffect(() => {
+    if (open) {
+      console.log('Modal de inseto aberto - atualizando lista de coletores');
+      fetchColetores();
+    }
+  }, [open, fetchColetores]);
+
+  // Função para validar o coletor selecionado
+  React.useEffect(() => {
+    // Se temos um idColetor selecionado, verifique se ele ainda existe na lista
+    if (formData.idColetor && coletores.length > 0) {
+      const coletorExiste = coletores.some(c => c.idColetor === formData.idColetor);
+      
+      // Se o coletor não existir mais (foi excluído), selecione o primeiro da lista
+      if (!coletorExiste && coletores[0]) {
+        console.log(`Coletor ID ${formData.idColetor} não encontrado na lista atualizada. Selecionando o primeiro disponível.`);
+        setFormData(prev => ({
+          ...prev,
+          idColetor: coletores[0].idColetor
+        }));
+      }
+    }
+  }, [coletores, formData.idColetor]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -414,7 +440,7 @@ export function InsectFormDialog({
               value={formData.idColetor?.toString() || ''}
               onValueChange={(value) => setFormData(prev => ({ ...prev, idColetor: Number(value) || 1 }))}
             >
-              <SelectTrigger id="idColetor">
+              <SelectTrigger id="idColetor" className={loadingColetores ? "animate-pulse" : ""}>
                 <SelectValue placeholder="Selecione um coletor" />
               </SelectTrigger>
               <SelectContent>
@@ -423,22 +449,31 @@ export function InsectFormDialog({
                 ) : coletores.length === 0 ? (
                   <SelectItem value="none" disabled>Nenhum coletor cadastrado</SelectItem>
                 ) : (
-                  coletores.map(coletor => (
-                    <SelectItem 
-                      key={coletor.idColetor} 
-                      value={coletor.idColetor.toString()}
-                    >
-                      {coletor.nomeColetor} (ID: {coletor.idColetor})
-                    </SelectItem>
-                  ))
+                  <>
+                    <div className="px-2 py-1.5 text-sm font-semibold text-zinc-500 border-b">
+                      {coletores.length} coletor(es) disponível(is)
+                    </div>
+                    {coletores.map(coletor => (
+                      <SelectItem 
+                        key={coletor.idColetor} 
+                        value={coletor.idColetor.toString()}
+                        className="flex flex-col items-start py-2"
+                      >
+                        <span className="font-medium">{coletor.nomeColetor}</span>
+                        <span className="text-xs text-zinc-500">CPF: {coletor.cpfColetor}</span>
+                      </SelectItem>
+                    ))}
+                  </>
                 )}
               </SelectContent>
             </Select>
             <div className="flex justify-between">
-              <p className="text-xs text-muted-foreground">Selecione um coletor (obrigatório)</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {loadingColetores ? "Atualizando coletores..." : "Selecione um coletor (obrigatório)"}
+              </p>
               <a 
                 href="/coletores" 
-                className="text-xs text-blue-500 hover:underline"
+                className="text-xs text-blue-500 hover:underline mt-1"
                 target="_blank"
                 rel="noopener noreferrer"
               >
