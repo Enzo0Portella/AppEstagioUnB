@@ -270,21 +270,24 @@ export function InsectFormDialog({
     console.log('Dados iniciais:', initialData);
     console.log('Dados do formulário:', {...formData, idColetor: idColetorNumero});
     
+    // Monta o payload sem nomeColetor
+    const { nomeColetor, ...payload } = formData;
+    
     if (isEditing && initialData?.id) {
       // Se estiver editando, mantém o ID e a tag original
       onSubmit?.({
-        ...formData,
+        ...payload,
         id: initialData.id,
         tag: initialData.tag,
         idColetor: idColetorNumero
-      });
+      } as any);
       console.log('Enviando para atualização - ID:', initialData.id);
     } else {
       // Se estiver criando, usa os dados do formulário com nova tag
       onSubmit?.({
-        ...formData,
+        ...payload,
         idColetor: idColetorNumero
-      });
+      } as any);
       console.log('Enviando para criação - Nova tag:', formData.tag);
     }
 
@@ -397,17 +400,6 @@ export function InsectFormDialog({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="nomeColetor">Nome do Coletor</Label>
-            <Input
-              id="nomeColetor"
-              name="nomeColetor"
-              placeholder="Nome do coletor"
-              value={formData.nomeColetor}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="space-y-1">
             <Label htmlFor="dataColeta">Data de Coleta</Label>
             <Input
               id="dataColeta"
@@ -451,7 +443,7 @@ export function InsectFormDialog({
                 ) : (
                   <>
                     <div className="px-2 py-1.5 text-sm font-semibold text-zinc-500 border-b">
-                      {coletores.length} coletor(es) disponível(is)
+                      {coletores.length} coletores disponíveis
                     </div>
                     {coletores.map(coletor => (
                       <SelectItem 
@@ -460,7 +452,7 @@ export function InsectFormDialog({
                         className="flex flex-col items-start py-2"
                       >
                         <span className="font-medium">{coletor.nomeColetor}</span>
-                        <span className="text-xs text-zinc-500">CPF: {coletor.cpfColetor}</span>
+                        <span className="px-2 text-xs text-zinc-500">CPF: {coletor.cpfColetor}</span>
                       </SelectItem>
                     ))}
                   </>
@@ -482,18 +474,6 @@ export function InsectFormDialog({
             </div>
           </div>
           
-          <div className="space-y-1">
-            <Label htmlFor="imagemUrl">URL da Imagem</Label>
-            <Input
-              id="imagemUrl"
-              name="imagemUrl"
-              placeholder="URL da imagem do inseto"
-              value={formData.imagemUrl || ''}
-              onChange={handleChange}
-            />
-            <p className="text-xs text-muted-foreground">Insira a URL completa de uma imagem (opcional)</p>
-          </div>
-
           <div className="flex justify-between mt-6">
             {isEditing && onDelete && (
               <Button type="button" variant="destructive" onClick={onDelete}>

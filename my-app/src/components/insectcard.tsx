@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { MapPin, Calendar, User } from "lucide-react";
 import { Insect } from "@/types/insect";
 import NextImage from "next/image";
+import { useColetores } from "@/hooks/useColetores";
 
 interface CardInsectProps {
   insect: Insect
@@ -18,6 +19,8 @@ export default function CardInsect({
   insect,
   onClick
 }: CardInsectProps) {
+  const { coletores } = useColetores();
+  const nomeColetor = coletores.find(c => c.idColetor === insect.idColetor)?.nomeColetor || 'Não informado';
   return (
     <Card className="cursor-pointer overflow-hidden flex flex-col" onClick={onClick}>
       <div className="relative h-40 w-full">
@@ -49,7 +52,7 @@ export default function CardInsect({
           </div>
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            <span>{insect.nomeColetor}</span>
+            <span>{nomeColetor}</span>
           </div>
         </div>
       </CardContent>

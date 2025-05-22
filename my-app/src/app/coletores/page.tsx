@@ -134,14 +134,13 @@ export default function ColetoresPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-svh w-full bg-zinc-50">
         <AppSidebar />
-        <div className="flex-1 p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-zinc-800 mb-2">Gerenciamento de Coletores</h1>
-            <p className="text-zinc-500 text-lg">Cadastre e gerencie todos os coletores do sistema</p>
-            
-            <div className="mt-6 flex justify-end">
+        <div className="flex-1 flex flex-col p-4 sm:p-8 w-full max-w-full">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-800 mb-1 sm:mb-2">Gerenciamento de Coletores</h1>
+            <p className="text-zinc-500 text-base sm:text-lg">Cadastre e gerencie todos os coletores do sistema</p>
+            <div className="mt-4 sm:mt-6 flex justify-end">
               <Button 
                 onClick={handleAddClick} 
                 disabled={isSubmitting || isDeleting}
@@ -192,68 +191,61 @@ export default function ColetoresPage() {
               </CardHeader>
             </Card>
           ) : (
-            <Card className="border border-gray-200 shadow-sm">
-              <CardHeader className="border-b border-gray-100 bg-gray-50 pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-zinc-800">Coletores Registrados</CardTitle>
-                    <CardDescription className="text-zinc-500 mt-1">
-                      Total de {coletores.length} coletor{coletores.length !== 1 ? 'es' : ''} disponível{coletores.length !== 1 ? 'is' : ''} no sistema
-                    </CardDescription>
+            <div className="w-full overflow-x-auto">
+              <Card className="border border-gray-200 shadow-sm min-w-[400px] w-full">
+                <CardHeader className="border-b border-gray-100 bg-gray-50 pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <CardTitle className="text-zinc-800">Coletores Registrados</CardTitle>
+                      <CardDescription className="text-zinc-500 mt-1">
+                        Total de {coletores.length} coletor{coletores.length !== 1 ? 'es' : ''} disponível{coletores.length !== 1 ? 'is' : ''} no sistema
+                      </CardDescription>
+                    </div>
                   </div>
-                  <Button 
-                    onClick={handleAddClick} 
-                    disabled={isSubmitting || isDeleting}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Adicionar
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader className="bg-gray-50">
-                    <TableRow>
-                      <TableHead className="w-[80px]">ID</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>CPF</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {coletores.map((coletor) => (
-                      <TableRow key={coletor.idColetor} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{coletor.idColetor}</TableCell>
-                        <TableCell>{coletor.nomeColetor}</TableCell>
-                        <TableCell>{formatCPFForDisplay(coletor.cpfColetor)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end space-x-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleEditClick(coletor)}
-                              className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleDeleteClick(coletor.idColetor)}
-                              className="text-red-400 hover:text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="w-[80px]">ID</TableHead>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>CPF</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {coletores.map((coletor) => (
+                        <TableRow key={coletor.idColetor} className="hover:bg-gray-50">
+                          <TableCell className="font-medium">{coletor.idColetor}</TableCell>
+                          <TableCell>{coletor.nomeColetor}</TableCell>
+                          <TableCell>{formatCPFForDisplay(coletor.cpfColetor)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleEditClick(coletor)}
+                                className="text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => handleDeleteClick(coletor.idColetor)}
+                                className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           <ColetorFormDialog

@@ -31,7 +31,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { SpotlightSearch } from "@/components/spotlight-search"
+import { AdvancedSearchDialog } from "./advanced-search-dialog"
 import { useHotkeys } from "react-hotkeys-hook"
 import { type Insect, type InsectFormData } from "@/types/insect"
 import { EditInsectDialog } from "@/components/edit-insect-dialog"
@@ -52,26 +52,20 @@ const data = {
       icon: Search,
     },
     {
-      title: "Home",
+      title: "Insetos",
       url: "/dashboard",
       icon: Snail,
       isActive: true,
     },
     {
-      title: "Favoritos",
-      url: "#",
-      icon: BookMarked,
-      badge: "10",
+      title: "Coletores",
+      url: "/coletores",
+      icon: SquareUserRound,
     },
     {
       title: "Novo Inseto",
       icon: Plus,
     },
-    {
-      title: "Coletores",
-      url: "/coletores",
-      icon: SquareUserRound,
-    }
   ],
   navSecondary: [
     {
@@ -200,7 +194,7 @@ export function AppSidebar({ insectData }: { insectData?: Insect[] }) {
         <SidebarRail />
       </Sidebar>
       
-      <SpotlightSearch 
+      <AdvancedSearchDialog
         open={spotlightOpen}
         onOpenChange={setSpotlightOpen}
         insects={insectData || []}

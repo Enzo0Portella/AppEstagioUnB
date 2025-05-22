@@ -20,10 +20,11 @@ import CardInsect from "@/components/insectcard";
 import InsectList from "@/components/explore-page/insect-list"
 import { InsectFormDialog } from "@/components/insect-form-dialog";
 import { Button } from "@/components/ui/button";
-import { InsectFormData } from '@/types/insect';
+import { InsectFormData, Insect } from '@/types/insect';
 import { useInsects } from '@/hooks/useInsects';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
+import { InsectDetailsDialog } from '@/components/insect-details-dialog';
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -39,6 +40,9 @@ export default function DashboardPage() {
     editInsect,
     removeInsect
   } = useInsects();
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsInsect, setDetailsInsect] = useState<Insect | null>(null);
 
   useEffect(() => {
     fetchInsects();
@@ -128,7 +132,10 @@ export default function DashboardPage() {
                 <CardInsect 
                   key={insect.id}
                   insect={insect}
-                  onClick={() => setSelectedInsect(insect)}
+                  onClick={() => {
+                    setDetailsInsect(insect);
+                    setDetailsOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -149,6 +156,24 @@ export default function DashboardPage() {
           dataColeta: new Date(selectedInsect.dataColeta),
           idColetor: selectedInsect.idColetor || 1
         } : undefined}
+      />
+
+      <InsectDetailsDialog
+        open={detailsOpen}
+        onOpenChange={(open) => {
+          setDetailsOpen(open);
+          if (!open) setDetailsInsect(null);
+        }}
+        insect={detailsInsect}
+        onEdit={(insect) => {
+          setDetailsOpen(false);
+          setSelectedInsect(insect);
+        }}
+        onDelete={(insect) => {
+          setDetailsOpen(false);
+          setSelectedInsect(insect);
+          setTimeout(() => handleDelete(), 200); // Pequeno delay para garantir fechamento do modal
+        }}
       />
     </SidebarProvider>
   );
